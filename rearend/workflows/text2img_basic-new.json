@@ -13,7 +13,7 @@
   },
   "286": {
     "inputs": {
-      "unet_name": "PLACEHOLDER_MODEL_NAME",  // 补全为模型名称变量（对应文件一的ckpt_name）
+      "unet_name": "PLACEHOLDER_MODEL_NAME", 
       "weight_dtype": "default"
     },
     "class_type": "UNETLoader",

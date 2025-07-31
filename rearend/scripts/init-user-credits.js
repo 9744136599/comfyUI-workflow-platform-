@@ -46,7 +46,7 @@ const initUserCredits = async () => {
         console.log(`🔄 正在为用户 ${user.username} (ID: ${user.id}) 初始化积分...`);
         
         // 使用积分服务初始化积分
-        await CreditService.initializeUserCredits(user.id, 500);
+        await CreditService.initializeUserCredits(user.id, 500000);
         
         successCount++;
         console.log(`✅ 用户 ${user.username} 积分初始化成功 (+500积分)`);

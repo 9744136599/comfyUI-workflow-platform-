@@ -30,7 +30,7 @@ class ComfyUIService {
         seed = -1,
         sampler, // 必须由前端提供，不设默认值
         clipSkip = 2,
-        type = 'text2img',
+        type = 'img2img',
         frontendTaskId // 前端提供的taskId
       } = params;
 
@@ -62,6 +62,7 @@ class ComfyUIService {
 
       // 加载并处理工作流
       const workflow = await this.loadWorkflow(workflowName);
+      // 更换工作流权重
       const processedWorkflow = this.replaceWorkflowPlaceholders(workflow, {
         POSITIVE_PROMPT: prompt,
         NEGATIVE_PROMPT: negativePrompt,
@@ -124,8 +125,9 @@ class ComfyUIService {
    * @returns {Object} 工作流JSON
    */
   async loadWorkflow(workflowName) {
+    // console.log('加载工作流文件:', workflowName);
     const workflowPath = path.join(this.workflowsPath, workflowName);
-    
+    console.log(' *******工作流文件路径:', workflowPath);
     if (!fs.existsSync(workflowPath)) {
       throw new Error(`工作流文件不存在: ${workflowName}`);
     }
@@ -415,15 +417,18 @@ class ComfyUIService {
         }
       });
 
+      // if (response.status === 200 && response.data && response.data.CheckpointLoaderSimple) {//git
 
       if (response.status === 200 && response.data && response.data.UNETLoader) {
         // const checkpointInfo = response.data.CheckpointLoaderSimple;
-        const checkpointInfo = response.data.UNETLoader;
-        console.log('模型信息:', checkpointInfo)
+        const checkpointInfo = response.data.UNETLoader;//haers
+        console.log('模型信息:', checkpointInfo);
 
+        // if (checkpointInfo.input && checkpointInfo.input.required && checkpointInfo.input.required.ckpt_name) {
 
-        if (checkpointInfo.input && checkpointInfo.input.required && checkpointInfo.input.required.unet_name) {
-          const modelFiles = checkpointInfo.input.required.unet_name[0];
+        if (checkpointInfo.input && checkpointInfo.input.required && checkpointInfo.input.required.unet_name) {//haers
+          // const modelFiles = checkpointInfo.input.required.ckpt_name[0];//git
+          const modelFiles = checkpointInfo.input.required.unet_name[0];//haers
           
           // 转换为前端需要的格式
           const models = modelFiles.map(filename => ({

@@ -279,7 +279,7 @@ class CreditService {
    * @param {number} initialCredits - 初始积分（默认500）
    * @returns {Promise<Object>} 初始化结果
    */
-  static async initializeUserCredits(userId, initialCredits = 500) {
+  static async initializeUserCredits(userId, initialCredits = 500000) {
     try {
       return await this.earnCredits(
         userId, 

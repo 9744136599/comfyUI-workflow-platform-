@@ -8,6 +8,7 @@ const fileManager = require('../utils/fileManager');
 
 // AIGC图片生成 - 集成ComfyUI
 const generateImage = async (req, res) => {
+  console.log("------------------------",req);
   try {
     const {
       prompt,
@@ -22,6 +23,8 @@ const generateImage = async (req, res) => {
       clipSkip = 2,
       frontendTaskId // 前端提供的taskId
     } = req.body;
+
+    console.log("用到的模型",model);
 
     // 验证必要参数
     if (!prompt || !prompt.trim()) {
