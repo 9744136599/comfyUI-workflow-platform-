@@ -174,6 +174,17 @@
 
         <!-- 生成按钮 -->
         <div class="panel-footer">
+          <!-- 生成模式提示 -->
+          <div class="generation-mode-info">
+            <el-alert 
+              :title="config.image_name ? '图生图模式' : '文生图模式'" 
+              :type="config.image_name ? 'success' : 'info'"
+              :description="config.image_name ? `使用图片: ${config.image_name}` : '纯文本生成'"
+              show-icon
+              :closable="false"
+            />
+          </div>
+          
           <el-button
             type="primary"
             size="large"
@@ -211,6 +222,50 @@
               <el-icon><Star /></el-icon>
               保存到画廊
             </el-button>
+          </div>
+        </div>
+
+        <!-- 文件上传区域 -->
+        <div class="upload-section">
+          <h4 class="upload-title">
+            <el-icon><Upload /></el-icon>
+            请在此处上传文件
+          </h4>
+          <div class="upload-area" @click="triggerFileInput" @drop="handleFileDrop" @dragover="handleDragOver" @dragleave="handleDragLeave">
+            <input 
+              ref="fileInput" 
+              type="file" 
+              accept=".png" 
+              @change="handleFileChange" 
+              style="display: none"
+            />
+            <div v-if="!uploadedFile" class="upload-placeholder">
+              <el-icon size="48"><Upload /></el-icon>
+              <p>点击或拖拽PNG文件到此处</p>
+              <p class="upload-tip">支持PNG格式，文件大小不超过10MB</p>
+            </div>
+            <div v-else class="uploaded-file">
+              <img :src="uploadedFile.preview" alt="上传的图片" class="uploaded-image" />
+              <div class="file-info">
+                <p><strong>文件名:</strong> {{ uploadedFile.name }}</p>
+                <p><strong>大小:</strong> {{ formatFileSize(uploadedFile.size) }}</p>
+                <p v-if="uploadedFile.comfyuiName"><strong>ComfyUI名称:</strong> {{ uploadedFile.comfyuiName }}</p>
+              </div>
+              <div class="file-actions">
+                <el-button size="small" @click="removeFile">删除</el-button>
+                <el-button size="small" type="primary" @click="uploadToComfyUI" :loading="isUploading">
+                  {{ isUploading ? '上传中...' : '上传到ComfyUI' }}
+                </el-button>
+              </div>
+            </div>
+          </div>
+          <div v-if="uploadStatus" class="upload-status">
+            <el-alert 
+              :title="uploadStatus.success ? '上传成功' : '上传失败'" 
+              :type="uploadStatus.success ? 'success' : 'error'"
+              :description="uploadStatus.message"
+              show-icon
+            />
           </div>
         </div>
 
@@ -389,7 +444,8 @@ import {
   Download,
   Star,
   View,
-  Coin
+  Coin,
+  Upload
 } from '@element-plus/icons-vue'
 
 export default {
@@ -403,7 +459,8 @@ export default {
     Download,
     Star,
     View,
-    Coin
+    Coin,
+    Upload
   },
   setup() {
     // 用户状态
@@ -420,7 +477,8 @@ export default {
       steps: 25,
       seed: -1,
       sampler: '', // 将通过API动态设置
-      clipSkip: 2
+      clipSkip: 2,
+      image_name: '' // 添加image_name参数，用于img2img模式
     })
 
     // 状态数据
@@ -443,6 +501,13 @@ export default {
       tags: [],
       isPublic: false
     })
+
+    // 文件上传状态
+    const fileInput = ref(null)
+    const uploadedFile = ref(null)
+    const isUploading = ref(false)
+    const uploadStatus = ref(null)
+    const select = ref('') // 保存ComfyUI返回的文件名
 
     // 模型数据
     const availableModels = ref([])
@@ -630,6 +695,7 @@ export default {
           seed: config.seed,
           sampler: config.sampler,
           clipSkip: config.clipSkip,
+          image_name: config.image_name, // 添加image_name参数
           frontendTaskId: frontendTaskId // 传递前端生成的taskId
         })
 
@@ -730,6 +796,126 @@ export default {
       } catch (error) {
         console.error('批量下载失败:', error);
         ElMessage.error('批量下载失败，请重试');
+      }
+    }
+
+    // 文件上传相关方法
+    const triggerFileInput = () => {
+      fileInput.value.click()
+    }
+
+    const handleFileChange = (event) => {
+      const file = event.target.files[0]
+      if (file) {
+        uploadedFile.value = {
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          preview: URL.createObjectURL(file)
+        }
+        uploadStatus.value = null // 清除之前的上传状态
+      }
+    }
+
+    const handleFileDrop = (event) => {
+      event.preventDefault()
+      const file = event.dataTransfer.files[0]
+      if (file) {
+        uploadedFile.value = {
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          preview: URL.createObjectURL(file)
+        }
+        uploadStatus.value = null // 清除之前的上传状态
+      }
+    }
+
+    const handleDragOver = (event) => {
+      event.preventDefault()
+      // 添加一些视觉反馈，例如改变背景颜色
+      event.currentTarget.classList.add('drag-over')
+    }
+
+    const handleDragLeave = (event) => {
+      event.currentTarget.classList.remove('drag-over')
+    }
+
+    const removeFile = () => {
+      uploadedFile.value = null
+      uploadStatus.value = null
+    }
+
+    const uploadToComfyUI = async () => {
+      if (!uploadedFile.value) {
+        ElMessage.warning('请先选择一个PNG文件')
+        return
+      }
+
+      if (uploadedFile.value.size > 10 * 1024 * 1024) { // 10MB
+        ElMessage.error('文件大小超过限制 (10MB)')
+        return
+      }
+
+      if (!uploadedFile.value.type.includes('png')) {
+        ElMessage.error('请上传PNG格式的文件')
+        return
+      }
+
+      isUploading.value = true
+      uploadStatus.value = null
+
+      try {
+        // 获取文件对象
+        const file = fileInput.value.files[0]
+        
+        // 创建FormData对象
+        const formData = new FormData()
+        formData.append('image', file)
+
+        console.log('使用FormData上传文件:', file.name, file.size, file.type)
+
+        // 调用本地代理接口，后端会转发到ComfyUI服务器
+        const response = await fetch('/api/upload/image', {
+          method: 'POST',
+          body: formData
+          // 注意：使用FormData时不要设置Content-Type，浏览器会自动设置
+        })
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        }
+
+        const result = await response.json()
+
+        if (result.name) {
+          ElMessage.success('文件上传成功！')
+          uploadedFile.value.comfyuiName = result.name
+          uploadStatus.value = { 
+            success: true, 
+            message: `文件已上传到ComfyUI，文件名: ${result.name}` 
+          }
+          
+          // 将返回的name保存到select变量中
+          select.value = result.name
+          
+          // 将返回的文件名赋值给config.image_name，用于img2img模式
+          config.image_name = result.name
+          
+          console.log('ComfyUI上传成功，文件名:', result.name)
+          console.log('已设置image_name为:', config.image_name)
+        } else {
+          throw new Error('上传响应格式错误')
+        }
+      } catch (error) {
+        console.error('文件上传失败:', error)
+        ElMessage.error('文件上传失败：' + (error.message || '网络错误'))
+        uploadStatus.value = { 
+          success: false, 
+          message: error.message || '上传失败' 
+        }
+      } finally {
+        isUploading.value = false
       }
     }
 
@@ -877,6 +1063,14 @@ export default {
       return new Date(time).toLocaleTimeString('zh-CN')
     }
 
+    const formatFileSize = (bytes) => {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
     // 模拟进度更新（WebSocket失败时的回退方案）
     const startFallbackProgress = () => {
       const progressInterval = setInterval(() => {
@@ -927,6 +1121,12 @@ export default {
       isSaving,
       currentSaveImage,
       saveForm,
+      // 文件上传相关
+      fileInput,
+      uploadedFile,
+      isUploading,
+      uploadStatus,
+      select, // 暴露select变量
       // 方法
       fetchAvailableModels,
       fetchAvailableSamplers,
@@ -947,9 +1147,18 @@ export default {
       useAsReference,
       formatTime,
       startFallbackProgress,
+      // 文件上传方法
+      triggerFileInput,
+      handleFileChange,
+      handleFileDrop,
+      handleDragOver,
+      handleDragLeave,
+      removeFile,
+      uploadToComfyUI,
       // 图片处理工具
       getFullImageUrl,
-      handleImageError
+      handleImageError,
+      formatFileSize
     }
   }
 }
@@ -1157,6 +1366,120 @@ export default {
 .result-actions {
   display: flex;
   gap: 0.5rem;
+}
+
+.generation-mode-info {
+  margin-bottom: 1rem;
+}
+
+.generation-mode-info .el-alert {
+  margin-bottom: 0;
+}
+
+.upload-section {
+  padding: 1.5rem;
+  border-bottom: 1px solid #f0f0f0;
+  background-color: #f8f9fa;
+}
+
+.upload-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.upload-area {
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: #fff;
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.upload-area:hover {
+  border-color: var(--primary-color);
+  background-color: #f0f9eb;
+}
+
+.upload-area.drag-over {
+  border-color: var(--primary-color);
+  background-color: #f0f9eb;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  transform: scale(1.02);
+}
+
+.upload-placeholder {
+  color: #909399;
+  font-size: 0.9rem;
+}
+
+.upload-placeholder .el-icon {
+  color: #c0c4cc;
+  margin-bottom: 0.5rem;
+}
+
+.upload-tip {
+  font-size: 0.8rem;
+  color: #c0c4cc;
+  margin-top: 0.5rem;
+}
+
+.uploaded-file {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: #fff;
+  border: 1px solid #ebeef5;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
+
+.uploaded-image {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #ebeef5;
+}
+
+.file-info {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.file-info p {
+  margin: 0.2rem 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  word-break: break-all;
+}
+
+.file-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.upload-status {
+  margin-top: 1rem;
+}
+
+.upload-status .el-alert {
+  margin-bottom: 0;
 }
 
 .result-content {

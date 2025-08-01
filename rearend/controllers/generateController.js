@@ -21,6 +21,7 @@ const generateImage = async (req, res) => {
       seed = -1,
       sampler, // 必须由前端提供
       clipSkip = 2,
+      image_name = '', // 添加image_name参数
       frontendTaskId // 前端提供的taskId
     } = req.body;
 
@@ -153,6 +154,10 @@ const generateImage = async (req, res) => {
       return await generateMockImages(generationConfig, totalCost, estimatedTime, res, req.user.id, totalCostCredits, taskId);
     }
 
+    // 根据image_name参数决定生成类型
+    const generationType = image_name && image_name.trim() ? 'img2img' : 'text2img';
+    console.log('生成类型:', generationType, image_name ? `(使用图片: ${image_name})` : '(纯文本生成)');
+
     // 调用ComfyUI生成图片 - 直接使用前端传来的模型和采样器名称
     const result = await comfyuiService.generateImage({
       prompt: generationConfig.prompt,
@@ -165,7 +170,8 @@ const generateImage = async (req, res) => {
       seed: generationConfig.seed,
       sampler: generationConfig.sampler, // 直接使用前端传来的真实采样器名称
       clipSkip: generationConfig.clipSkip,
-      type: 'text2img',
+      type: generationType, // 根据image_name决定类型
+      image_name: image_name, // 传递图片名称给ComfyUI服务
       frontendTaskId: taskId // 传递taskId给ComfyUI服务
     });
 

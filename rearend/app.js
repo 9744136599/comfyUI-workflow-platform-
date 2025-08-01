@@ -6,6 +6,7 @@ const userRoutes = require('./routes/user');
 const generateRoutes = require('./routes/generate');
 const modelsRoutes = require('./routes/models');
 const worksRoutes = require('./routes/works');
+const uploadRoutes = require('./routes/upload'); // 添加上传路由
 const { sequelize, connectDB, initModels } = require('./database/database'); // 导入 sequelize 和 connectDB
 
 const path = require('path'); // 确保引入 path 模块
@@ -29,6 +30,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/generate', generateRoutes);
 app.use('/api/models', modelsRoutes);
 app.use('/api/works', worksRoutes);
+app.use('/api/upload', uploadRoutes); // 添加上传路由
 
 // 定义一个根路由用于测试
 app.get('/', (req, res) => {

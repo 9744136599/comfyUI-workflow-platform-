@@ -5,6 +5,10 @@ const config = {
   API_TIMEOUT: Number(import.meta.env.VITE_API_TIMEOUT) || 10000,
   APP_TITLE: import.meta.env.VITE_APP_TITLE || '用户管理系统',
   
+  // ComfyUI服务器配置
+  COMFYUI_URL: import.meta.env.VITE_COMFYUI_URL || 'http://127.0.0.1:8188',
+  USE_COMFYUI_PROXY: import.meta.env.VITE_USE_COMFYUI_PROXY !== 'false', // 默认使用代理
+  
   // 通用配置
   TOKEN_KEY: 'token',
   TOKEN_EXPIRE_TIME: 24 * 60 * 60 * 1000, // 24小时
@@ -39,5 +43,7 @@ export const {
   API_TIMEOUT,
   TOKEN_KEY,
   TOKEN_EXPIRE_TIME,
-  REMEMBER_EXPIRE_TIME
+  REMEMBER_EXPIRE_TIME,
+  COMFYUI_URL,
+  USE_COMFYUI_PROXY
 } = currentConfig

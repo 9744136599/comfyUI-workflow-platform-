@@ -1,121 +1,218 @@
 {
-  "3": {
+  "233": {
     "inputs": {
-      "seed": "{{SEED}}",
-      "steps": "{{STEPS}}",
-      "cfg": "{{CFG_SCALE}}",
-      "sampler_name": "{{SAMPLER}}",
-      "scheduler": "normal",
-      "denoise": "{{DENOISE_STRENGTH}}",
+      "conditioning": [
+        "304",
+        0
+      ]
+    },
+    "class_type": "ConditioningZeroOut",
+    "_meta": {
+      "title": "条件零化"
+    }
+  },
+  "234": {
+    "inputs": {
+      "guidance": 2.5,
+      "conditioning": [
+        "302",
+        0
+      ]
+    },
+    "class_type": "FluxGuidance",
+    "_meta": {
+      "title": "Flux引导"
+    }
+  },
+  "236": {
+    "inputs": {
+      "clip_name1": "clip_l.safetensors",
+      "clip_name2": "t5xxl_fp8_e4m3fn.safetensors",
+      "type": "flux",
+      "device": "default"
+    },
+    "class_type": "DualCLIPLoader",
+    "_meta": {
+      "title": "双CLIP加载器"
+    }
+  },
+  "237": {
+    "inputs": {
+      "vae_name": "ae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "VAE加载器"
+    }
+  },
+  "239": {
+    "inputs": {
+      "unet_name": "XL_v8.0.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "UNET加载器"
+    }
+  },
+  "256": {
+    "inputs": {
+      "image": [
+        "260",
+        0
+      ]
+    },
+    "class_type": "FluxKontextImageScale",
+    "_meta": {
+      "title": "FluxKontextImageScale"
+    }
+  },
+  "257": {
+    "inputs": {
+      "pixels": [
+        "256",
+        0
+      ],
+      "vae": [
+        "237",
+        0
+      ]
+    },
+    "class_type": "VAEEncode",
+    "_meta": {
+      "title": "VAE编码"
+    }
+  },
+  "258": {
+    "inputs": {
+      "samples": [
+        "259",
+        0
+      ],
+      "vae": [
+        "237",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE解码"
+    }
+  },
+  "259": {
+    "inputs": {
+      "seed": "{{SEED}}",  
+      "steps": "{{STEPS}}",  
+      "cfg": "{{CFG_SCALE}}", 
+      "sampler_name": "{{SAMPLER}}",  
+      "scheduler": "simple",
+      "denoise": "{{DENOISE_STRENGTH}}",  
       "model": [
-        "4",
+        "239",
         0
       ],
       "positive": [
-        "6",
+        "234",
         0
       ],
       "negative": [
-        "7",
+        "233",
         0
       ],
       "latent_image": [
-        "11",
+        "303",
         0
       ]
     },
     "class_type": "KSampler",
     "_meta": {
-      "title": "KSampler"
+      "title": "K采样器"
     }
   },
-  "4": {
-    "inputs": {
-      "ckpt_name": "{{MODEL_NAME}}"
-    },
-    "class_type": "CheckpointLoaderSimple",
-    "_meta": {
-      "title": "Load Checkpoint"
-    }
-  },
-  "6": {
-    "inputs": {
-      "text": "{{POSITIVE_PROMPT}}",
-      "clip": [
-        "4",
-        1
-      ]
-    },
-    "class_type": "CLIPTextEncode",
-    "_meta": {
-      "title": "CLIP Text Encode (Prompt)"
-    }
-  },
-  "7": {
-    "inputs": {
-      "text": "{{NEGATIVE_PROMPT}}",
-      "clip": [
-        "4",
-        1
-      ]
-    },
-    "class_type": "CLIPTextEncode",
-    "_meta": {
-      "title": "CLIP Text Encode (Prompt)"
-    }
-  },
-  "8": {
-    "inputs": {
-      "samples": [
-        "3",
-        0
-      ],
-      "vae": [
-        "4",
-        2
-      ]
-    },
-    "class_type": "VAEDecode",
-    "_meta": {
-      "title": "VAE Decode"
-    }
-  },
-  "9": {
-    "inputs": {
-      "filename_prefix": "ComfyUI",
-      "images": [
-        "8",
-        0
-      ]
-    },
-    "class_type": "SaveImage",
-    "_meta": {
-      "title": "Save Image"
-    }
-  },
-  "10": {
+  "260": {
     "inputs": {
       "image": "{{INPUT_IMAGE}}"
     },
     "class_type": "LoadImage",
     "_meta": {
-      "title": "Load Image"
+      "title": "加载图像"
     }
   },
-  "11": {
+  "261": {
     "inputs": {
-      "pixels": [
-        "10",
+      "filename_prefix": "ComfyUI",
+      "images": [
+        "258",
         0
-      ],
-      "vae": [
-        "4",
-        2
       ]
     },
-    "class_type": "VAEEncode",
+    "class_type": "SaveImage",
     "_meta": {
-      "title": "VAE Encode"
+      "title": "保存图像"
+    }
+  },
+  "302": {
+    "inputs": {
+      "conditioning": [
+        "304",
+        0
+      ],
+      "latent": [
+        "257",
+        0
+      ]
+    },
+    "class_type": "ReferenceLatent",
+    "_meta": {
+      "title": "ReferenceLatent"
+    }
+  },
+  "303": {
+    "inputs": {
+      "width": 1088,
+      "height": 1920,
+      "batch_size": 1
+    },
+    "class_type": "EmptySD3LatentImage",
+    "_meta": {
+      "title": "空Latent_SD3"
+    }
+  },
+  "304": {
+    "inputs": {
+      "text": [
+        "305",
+        0
+      ],
+      "speak_and_recognation": {
+        "__value__": [
+          false,
+          true
+        ]
+      },
+      "clip": [
+        "236",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP文本编码器"
+    }
+  },
+  "305": {
+    "inputs": {
+      "text": "{{POSITIVE_PROMPT}}",
+      "speak_and_recognation": {
+        "__value__": [
+          false,
+          true
+        ]
+      }
+    },
+    "class_type": "CR Text",
+    "_meta": {
+      "title": "文本"
     }
   }
 }

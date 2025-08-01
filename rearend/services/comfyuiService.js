@@ -31,6 +31,7 @@ class ComfyUIService {
         sampler, // 必须由前端提供，不设默认值
         clipSkip = 2,
         type = 'img2img',
+        image_name = '', // 添加image_name参数
         frontendTaskId // 前端提供的taskId
       } = params;
 
@@ -62,6 +63,7 @@ class ComfyUIService {
 
       // 加载并处理工作流
       const workflow = await this.loadWorkflow(workflowName);
+      console.log(' *******model------:', model);
       // 更换工作流权重
       const processedWorkflow = this.replaceWorkflowPlaceholders(workflow, {
         POSITIVE_PROMPT: prompt,
@@ -77,9 +79,11 @@ class ComfyUIService {
         DENOISE_STRENGTH: 0.75, // 用于img2img
         UPSCALE_WIDTH: width * 2, // 用于放大
         UPSCALE_HEIGHT: height * 2,
-        UPSCALE_MODEL: 'RealESRGAN_x4plus.pth'
+        UPSCALE_MODEL: 'RealESRGAN_x4plus.pth',
+        INPUT_IMAGE: image_name // 添加INPUT_IMAGE参数
       });
 
+      console.log(' *******processedWorkflow------:', processedWorkflow);
       // 提交任务到ComfyUI
       const promptResponse = await this.submitPrompt(processedWorkflow);
       
@@ -138,8 +142,8 @@ class ComfyUIService {
 
   /**
    * 替换工作流中的占位符
-   * @param {Object} workflow - 工作流JSON
-   * @param {Object} params - 替换参数
+   * @param {Object} workflow - 原始工作流
+   * @param {Object} params - 参数对象
    * @returns {Object} 处理后的工作流
    */
   replaceWorkflowPlaceholders(workflow, params) {
@@ -148,22 +152,22 @@ class ComfyUIService {
     // 替换所有占位符
     Object.keys(params).forEach(key => {
       const value = params[key];
-      const placeholder = `PLACEHOLDER_${key}`;
+      const placeholder = `{{${key}}}`;
       
       // 根据值的类型进行正确的替换
       if (typeof value === 'string') {
         // 字符串类型：正确转义特殊字符
         const escapedValue = value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-        workflowStr = workflowStr.replace(new RegExp(`"${placeholder}"`, 'g'), `"${escapedValue}"`);
+        workflowStr = workflowStr.replace(new RegExp(placeholder, 'g'), `"${escapedValue}"`);
       } else if (typeof value === 'number') {
         // 数字类型：替换占位符为数字（去掉引号）
-        workflowStr = workflowStr.replace(new RegExp(`"${placeholder}"`, 'g'), value.toString());
+        workflowStr = workflowStr.replace(new RegExp(placeholder, 'g'), value.toString());
       } else if (typeof value === 'boolean') {
         // 布尔类型：替换占位符为布尔值（去掉引号）
-        workflowStr = workflowStr.replace(new RegExp(`"${placeholder}"`, 'g'), value.toString());
+        workflowStr = workflowStr.replace(new RegExp(placeholder, 'g'), value.toString());
       } else {
         // 其他类型使用JSON序列化
-        workflowStr = workflowStr.replace(new RegExp(`"${placeholder}"`, 'g'), JSON.stringify(value));
+        workflowStr = workflowStr.replace(new RegExp(placeholder, 'g'), JSON.stringify(value));
       }
     });
     
@@ -171,7 +175,9 @@ class ComfyUIService {
       return JSON.parse(workflowStr);
     } catch (error) {
       console.error('工作流JSON解析失败:', error.message);
-      console.error('处理后的工作流字符串:', workflowStr.substring(0, 500) + '...');
+      // console.error('处理后的工作流字符串:', workflowStr.substring(0, 900) + '...');
+      console.error('处理后的工作流字符串:', workflowStr+"");
+
       throw new Error('工作流格式错误');
     }
   }
