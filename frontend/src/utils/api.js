@@ -35,6 +35,7 @@ api.interceptors.response.use(
   }
 )
 
+// 前端API调用，向 url 发送 POST 请求，携带 data 参数
 export const userAPI = {
   login: (data) => api.post('/users/login', data),
   register: (data) => api.post('/users/register', data),

@@ -156,6 +156,7 @@ const generateImage = async (req, res) => {
 
     // 根据image_name参数决定生成类型
     const generationType = image_name && image_name.trim() ? 'img2img' : 'text2img';
+    console.log("--generationType-----",generationType);
     console.log('生成类型:', generationType, image_name ? `(使用图片: ${image_name})` : '(纯文本生成)');
 
     // 调用ComfyUI生成图片 - 直接使用前端传来的模型和采样器名称

@@ -152,13 +152,52 @@ class ComfyUIService {
     // 替换所有占位符
     Object.keys(params).forEach(key => {
       const value = params[key];
-      const placeholder = `{{${key}}}`;
+      
+      // 根据参数名映射到工作流中的占位符格式
+      let placeholder;
+      switch(key) {
+        case 'MODEL_NAME':
+          placeholder = 'PLACEHOLDER_MODEL_NAME';
+          break;
+        case 'WIDTH':
+          placeholder = 'PLACEHOLDER_WIDTH';
+          break;
+        case 'HEIGHT':
+          placeholder = 'PLACEHOLDER_HEIGHT';
+          break;
+        case 'BATCH_SIZE':
+          placeholder = 'PLACEHOLDER_BATCH_SIZE';
+          break;
+        case 'CFG_SCALE':
+          placeholder = 'PLACEHOLDER_CFG_SCALE';
+          break;
+        case 'STEPS':
+          placeholder = 'PLACEHOLDER_STEPS';
+          break;
+        case 'SEED':
+          placeholder = 'PLACEHOLDER_SEED';
+          break;
+        case 'SAMPLER':
+          placeholder = 'PLACEHOLDER_SAMPLER';
+          break;
+        case 'POSITIVE_PROMPT':
+          placeholder = 'PLACEHOLDER_POSITIVE_PROMPT';
+          break;
+        case 'NEGATIVE_PROMPT':
+          placeholder = 'PLACEHOLDER_NEGATIVE_PROMPT';
+          break;
+        case 'INPUT_IMAGE':
+          placeholder = 'PLACEHOLDER_INPUT_IMAGE';
+          break;
+        default:
+          placeholder = `{{${key}}}`;
+      }
       
       // 根据值的类型进行正确的替换
       if (typeof value === 'string') {
-        // 字符串类型：正确转义特殊字符
-        const escapedValue = value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-        workflowStr = workflowStr.replace(new RegExp(placeholder, 'g'), `"${escapedValue}"`);
+        // 字符串类型：直接替换占位符，不添加额外引号
+        // 因为JSON.stringify已经为字符串值添加了引号
+        workflowStr = workflowStr.replace(new RegExp(placeholder, 'g'), value);
       } else if (typeof value === 'number') {
         // 数字类型：替换占位符为数字（去掉引号）
         workflowStr = workflowStr.replace(new RegExp(placeholder, 'g'), value.toString());

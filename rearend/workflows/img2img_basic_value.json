@@ -47,7 +47,7 @@
   },
   "239": {
     "inputs": {
-      "unet_name": "PLACEHOLDER_MODEL_NAME",
+      "unet_name": "XL_v8.0.safetensors",
       "weight_dtype": "default"
     },
     "class_type": "UNETLoader",
@@ -101,10 +101,10 @@
   },
   "259": {
     "inputs": {
-      "seed": "PLACEHOLDER_SEED",  
-      "steps": "PLACEHOLDER_STEPS",  
-      "cfg": "PLACEHOLDER_CFG_SCALE", 
-      "sampler_name": "PLACEHOLDER_SAMPLER",  
+      "seed": 223002130144370,  
+      "steps": 25,  
+      "cfg": 1, 
+      "sampler_name": "euler",  
       "scheduler": "simple",
       "denoise": 1,  
       "model": [
@@ -131,7 +131,7 @@
   },
   "260": {
     "inputs": {
-      "image": "PLACEHOLDER_INPUT_IMAGE"
+      "image": "test3.png"
     },
     "class_type": "LoadImage",
     "_meta": {
@@ -169,9 +169,9 @@
   },
   "303": {
     "inputs": {
-      "width": "PLACEHOLDER_WIDTH",
-      "height": "PLACEHOLDER_HEIGHT",
-      "batch_size": "PLACEHOLDER_BATCH_SIZE"
+      "width": 512,
+      "height": 512,
+      "batch_size": 1
     },
     "class_type": "EmptySD3LatentImage",
     "_meta": {
