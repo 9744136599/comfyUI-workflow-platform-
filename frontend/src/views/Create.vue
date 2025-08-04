@@ -231,7 +231,7 @@
             <el-icon><Upload /></el-icon>
             请在此处上传文件
           </h4>
-          <div class="upload-area" @click="triggerFileInput" @drop="handleFileDrop" @dragover="handleDragOver" @dragleave="handleDragLeave">
+          <div class="upload-area" @click="!uploadedFile && triggerFileInput()" @drop="handleFileDrop" @dragover="handleDragOver" @dragleave="handleDragLeave">
             <input 
               ref="fileInput" 
               type="file" 
@@ -252,8 +252,8 @@
                 <p v-if="uploadedFile.comfyuiName"><strong>ComfyUI名称:</strong> {{ uploadedFile.comfyuiName }}</p>
               </div>
               <div class="file-actions">
-                <el-button size="small" @click="removeFile">删除</el-button>
-                <el-button size="small" type="primary" @click="uploadToComfyUI" :loading="isUploading">
+                <el-button size="small" @click.stop="removeFile">删除</el-button>
+                <el-button size="small" type="primary" @click.stop="uploadToComfyUI" :loading="isUploading">
                   {{ isUploading ? '上传中...' : '上传到ComfyUI' }}
                 </el-button>
               </div>
@@ -878,6 +878,9 @@ export default {
         // 调用本地代理接口，后端会转发到ComfyUI服务器
         const response = await fetch('/api/upload/image', {
           method: 'POST',
+          headers: {
+            'X-Username': userStore.userName || 'anonymous' // 添加用户名到请求头
+          },
           body: formData
           // 注意：使用FormData时不要设置Content-Type，浏览器会自动设置
         })
@@ -893,7 +896,7 @@ export default {
           uploadedFile.value.comfyuiName = result.name
           uploadStatus.value = { 
             success: true, 
-            message: `文件已上传到ComfyUI，文件名: ${result.name}` 
+            message: `文件已上传到ComfyUI，文件名: ${result.name}${result.dimensions ? `，尺寸: ${result.width} × ${result.height}` : ''}` 
           }
           
           // 将返回的name保存到select变量中
@@ -904,6 +907,9 @@ export default {
           
           console.log('ComfyUI上传成功，文件名:', result.name)
           console.log('已设置image_name为:', config.image_name)
+          if (result.dimensions) {
+            console.log('图片尺寸:', result.width, '×', result.height)
+          }
         } else {
           throw new Error('上传响应格式错误')
         }
