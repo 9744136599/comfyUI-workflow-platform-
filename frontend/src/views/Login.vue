@@ -63,6 +63,11 @@
             {{ userStore.isLoading ? '登录中...' : '登录' }}
           </el-button>
         </el-form-item>
+
+        <!-- 企微登录按钮 -->
+        <el-form-item>
+          <WechatLogin />
+        </el-form-item>
       </el-form>
 
       <div class="auth-links">
@@ -83,12 +88,14 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import { ElMessage } from 'element-plus'
 import { Avatar, Right } from '@element-plus/icons-vue'
+import WechatLogin from '../components/WechatLogin.vue'
 
 export default {
   name: 'Login',
   components: {
     Avatar,
-    Right
+    Right,
+    WechatLogin
   },
   setup() {
     const router = useRouter()

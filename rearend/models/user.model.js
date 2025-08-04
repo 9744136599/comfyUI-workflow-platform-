@@ -66,6 +66,44 @@ const User = sequelize.define('user', {
     defaultValue: 0, // 记录总消费积分
     field: 'total_spent_credits'
   },
+  // --- 企微相关字段 ---
+  wechat_userid: {
+    type: DataTypes.STRING(50),
+    allowNull: true,
+    unique: true,
+    comment: '企微用户ID'
+  },
+  wechat_name: {
+    type: DataTypes.STRING(100),
+    allowNull: true,
+    comment: '企微姓名'
+  },
+  wechat_mobile: {
+    type: DataTypes.STRING(20),
+    allowNull: true,
+    comment: '企微手机号'
+  },
+  wechat_avatar: {
+    type: DataTypes.STRING(500),
+    allowNull: true,
+    comment: '企微头像URL'
+  },
+  wechat_department: {
+    type: DataTypes.STRING(200),
+    allowNull: true,
+    comment: '企微部门信息'
+  },
+  wechat_position: {
+    type: DataTypes.STRING(100),
+    allowNull: true,
+    comment: '企微职位'
+  },
+  is_active: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: true,
+    comment: '用户是否激活'
+  },
   // --- 现有字段 ---
   last_login: {
     type: DataTypes.DATE,
