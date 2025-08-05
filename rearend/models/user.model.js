@@ -15,7 +15,7 @@ const User = sequelize.define('user', {
   },
   email: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
     unique: true,
     validate: {
       isEmail: true,
@@ -76,19 +76,20 @@ const User = sequelize.define('user', {
   createdAt: 'created_at', // 映射到数据库的 created_at 字段
   updatedAt: 'updated_at', // 映射到数据库的 updated_at 字段
   hooks: {
-    beforeCreate: async (user) => {
-      if (user.password) {
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(user.password, salt);
-      }
-    },
-    beforeUpdate: async (user) => {
-      // 仅在密码字段被修改时才哈希
-      if (user.changed('password')) {
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(user.password, salt);
-      }
-    },
+    // 暂时禁用密码自动加密，手动处理密码加密
+    // beforeCreate: async (user) => {
+    //   if (user.password) {
+    //     const salt = await bcrypt.genSalt(10);
+    //     user.password = await bcrypt.hash(user.password, salt);
+    //   }
+    // },
+    // beforeUpdate: async (user) => {
+    //   // 仅在密码字段被修改时才哈希
+    //   if (user.changed('password')) {
+    //     const salt = await bcrypt.genSalt(10);
+    //     user.password = await bcrypt.hash(user.password, salt);
+    //   }
+    // },
   },
 });
 

@@ -71,18 +71,26 @@ exports.login = async (req, res) => {
   const { username, password, rememberMe = false } = req.body;
 
   try {
+    console.log('登录请求:', { username, password: '***' });
+    
     // 允许使用用户名或邮箱登录
     const user = await User.findOne({ where: { [Op.or]: [{ username: username }, { email: username }] } });
 
     if (!user) {
+      console.log('用户不存在:', username);
       return res.status(404).json({ success: false, error: '用户不存在', code: 'USER_NOT_FOUND' });
     }
+
+    console.log('找到用户:', user.username);
 
     // 验证密码
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      console.log('密码验证失败');
       return res.status(401).json({ success: false, error: '用户名或密码错误', code: 'INVALID_CREDENTIALS' });
     }
+
+    console.log('密码验证成功');
 
     // 更新最后登录时间
     user.last_login = new Date();
@@ -91,9 +99,9 @@ exports.login = async (req, res) => {
     // 生成JWT
     const payload = { id: user.id, username: user.username };
     const expiresIn = rememberMe ? '30d' : '24h'; // 根据rememberMe设置有效期
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn });
+    const token = jwt.sign(payload, process.env.JWT_SECRET || 'your-secret-key', { expiresIn });
 
-    res.status(200).json({
+    const responseData = {
       success: true,
       message: '登录成功',
       data: {
@@ -102,10 +110,14 @@ exports.login = async (req, res) => {
           id: user.id,
           username: user.username,
           email: user.email,
+          credits: user.credits || 0,
           last_login: user.last_login,
         }
       }
-    });
+    };
+
+    console.log('登录成功，返回数据:', { ...responseData, data: { ...responseData.data, token: '***' } });
+    res.status(200).json(responseData);
   } catch (error) {
     console.error('登录失败:', error);
     res.status(500).json({ success: false, error: '服务器内部错误', code: 'SERVER_ERROR' });

@@ -7,6 +7,7 @@ const generateRoutes = require('./routes/generate');
 const modelsRoutes = require('./routes/models');
 const worksRoutes = require('./routes/works');
 const uploadRoutes = require('./routes/upload'); // 添加上传路由
+const userSyncRoutes = require('./routes/userSync'); // 添加用户同步路由
 const { sequelize, connectDB, initModels } = require('./database/database'); // 导入 sequelize 和 connectDB
 
 const path = require('path'); // 确保引入 path 模块
@@ -31,6 +32,7 @@ app.use('/api/generate', generateRoutes);
 app.use('/api/models', modelsRoutes);
 app.use('/api/works', worksRoutes);
 app.use('/api/upload', uploadRoutes); // 添加上传路由
+app.use('/api/user-sync', userSyncRoutes); // 添加用户同步路由
 
 // 定义一个根路由用于测试
 app.get('/', (req, res) => {
@@ -67,6 +69,17 @@ const startServer = async () => {
 
     const server = app.listen(PORT, () => {
       console.log(`服务器正在 http://localhost:${PORT} 上运行`);
+      
+      // 启动后立即执行一次用户同步
+      console.log('开始执行用户数据同步...');
+      const userSyncService = require('./services/userSyncService');
+      userSyncService.syncAllUsers()
+        .then(result => {
+          console.log('用户同步完成:', result);
+        })
+        .catch(error => {
+          console.error('用户同步失败:', error);
+        });
     });
 
     // 添加WebSocket服务器用于实时进度推送
