@@ -81,7 +81,7 @@ npm install
 创建后端环境配置文件 `rearend/.env`:
 ```env
 # 数据库配置
-DB_NAME=comfyui_platform
+DB_NAME=comfyui_platform_origion
 DB_USER=root
 DB_PASSWORD=your_password
 DB_HOST=localhost
